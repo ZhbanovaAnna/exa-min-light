@@ -165,6 +165,7 @@ public:
   double Z[MaxNumOfFunc];//минимальные значения функций задачи (для индексного метода)
 
   void GetBestIntervals(TSearchInterval** intervals,int count);
+  void ResizeQueue(int size);
 };
 
 // ------------------------------------------------------------------------------------------------

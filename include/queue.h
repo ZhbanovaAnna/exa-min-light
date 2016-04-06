@@ -51,6 +51,7 @@ public:
   void PushWithPriority(double key, void *value);
   void Pop(double *key, void **value);
   void Clear();
+  void Resize(int size);
 };
 
 #endif

@@ -62,7 +62,7 @@ protected:
   //Вычисление оценки константы Липшица
   virtual void CalculateM(TSearchInterval* p);
 public:
-  TMethod(int _MaxNumOfTrials, double _Eps, double _r, double _reserv, int _m, int _L, int _CurL, 
+  TMethod(int _MaxNumOfTrials, double _Eps, double _r, double _reserv, int _m, int _L, int _CurL,  int _NumPoints,
     /*EMapType _MapType, /*TParameters _parameters, */TTask *_pTask, TSearchData *_pData);
   virtual ~TMethod();
   /*
@@ -91,6 +91,7 @@ public:
   //Сбор статистики
   int GetNumberOfTrials();
   double GetMu();
+  const double* GetM();
   //Локальное уточнение из текущей лучшей точки
   void LocalSearch();
 

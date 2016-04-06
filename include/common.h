@@ -19,9 +19,13 @@
 **  Constants                                                                **
 \* ========================================================================= */
 
-//const int MaxNumOfTaskLevels = 5;
-const int MaxNumOfFunc = 1; // в настоящий момент решаются только безусловные
-                            //   задачи, поэтому функционал один
+const int MaxNumOfTaskLevels = 5;
+/*
+ * в настоящий момент решаются только безусловные
+ * задачи, поэтому функционал один
+ */
+const int MaxNumOfFunc = 1;
+
 const int MaxDim = 5;
 const int MaxM = 15;
 const int MaxL = 10;
@@ -31,6 +35,10 @@ const double MaxDouble = 1.7e308;
 const int DefaultQueueSize = 1048575; // should be 2^k - 1
 const int MaxQueueSize = 67108863; // should be 2^26 - 1
 const int DefaultSearchDataSize = 100000;
+
+const int TagChildStartSolve = 101;
+const int TagChildSolved  = 102;
+const int ChildStopMsg = -101;
 
 /* ========================================================================= *\
 **  Types                                                                    **

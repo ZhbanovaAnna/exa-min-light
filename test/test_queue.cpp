@@ -32,7 +32,7 @@ TEST_F(TQueueTest, throws_when_create_queue_with_size_not_divisible_by_power_of_
 }
 
 TEST_F(TQueueTest, can_create_queue_with_DefaultQueueSize)
-{    
+{
   ASSERT_NO_THROW(TPriorityQueue q(DefaultQueueSize));
 }
 
@@ -47,12 +47,12 @@ TEST_F(TQueueTest, can_create_queue_with_correct_size)
 }
 
 TEST_F(TQueueTest, can_allocate_memory_for_queue)
-{    
+{
   ASSERT_NO_THROW(TPriorityQueue q(SIZE));
 }
 
 TEST_F(TQueueTest, throws_when_memory_for_queue_not_allocated)
-{    
+{
   ASSERT_ANY_THROW(TPriorityQueue q(MaxQueueSize * 2 - 1));
 }
 

@@ -368,3 +368,8 @@ int TSearchData::GetCount()
 {
   return Count;
 }
+// ------------------------------------------------------------------------------------------------
+void TSearchData::ResizeQueue(int size)
+{
+	pQueue->Resize(size);
+}

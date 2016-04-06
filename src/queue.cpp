@@ -222,4 +222,13 @@ void TPriorityQueue::Clear()
 {
   CurSize = 0;
 }
+// ------------------------------------------------------------------------------------------------
+void TPriorityQueue::Resize(int size)
+{
+	CurSize = 0;
+	MaxSize = size;
+	delete pMem;
+    pMem = new TQueueElement[MaxSize];
+	/*pMem = new MinMaxHeap< TQueueElement, _less >(MaxSize);*/
+}
 // - end of file ----------------------------------------------------------------------------------

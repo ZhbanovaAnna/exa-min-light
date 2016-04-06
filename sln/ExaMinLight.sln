@@ -5,6 +5,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ExaMinLight", "ExaMinLight.
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestExaMinLight", "TestExaMinLight.vcproj", "{5040BCAF-198C-4CB5-95AA-C488571DF816}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestMpiExaMinLight", "..\TestMpiExaMinLight\TestMpiExaMinLight.vcproj", "{CE8364CE-A661-4FC1-87D1-251EBCF7E5C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{5040BCAF-198C-4CB5-95AA-C488571DF816}.Debug|Win32.Build.0 = Debug|Win32
 		{5040BCAF-198C-4CB5-95AA-C488571DF816}.Release|Win32.ActiveCfg = Release|Win32
 		{5040BCAF-198C-4CB5-95AA-C488571DF816}.Release|Win32.Build.0 = Release|Win32
+		{CE8364CE-A661-4FC1-87D1-251EBCF7E5C8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{CE8364CE-A661-4FC1-87D1-251EBCF7E5C8}.Debug|Win32.Build.0 = Debug|Win32
+		{CE8364CE-A661-4FC1-87D1-251EBCF7E5C8}.Release|Win32.ActiveCfg = Release|Win32
+		{CE8364CE-A661-4FC1-87D1-251EBCF7E5C8}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

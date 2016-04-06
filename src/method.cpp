@@ -23,8 +23,8 @@ using namespace std;
 // ------------------------------------------------------------------------------------------------
 //TMethod::TMethod(int _MaxNumOfTrials, double _Eps, double _r, int _m, int _L, EMapType _MapType,
 //    TTask *_pTask, TSearchData *_pData, TOptimEstimation *_pEstimation)
-TMethod::TMethod(int _MaxNumOfTrials, double _Eps, double _r, double _reserv, int _m, int _L, 
-                 int _CurL, /*EMapType _MapType, /*TParameters _parameters, */TTask *_pTask, TSearchData *_pData)//:
+TMethod::TMethod(int _MaxNumOfTrials, double _Eps, double _r, double _reserv, int _m, int _L,  
+                 int _CurL, int _NumPoints,/*EMapType _MapType, /*TParameters _parameters, */TTask *_pTask, TSearchData *_pData)//:
 //parameters(_parameters)
 {
   if (_MaxNumOfTrials < 1)
@@ -62,7 +62,7 @@ TMethod::TMethod(int _MaxNumOfTrials, double _Eps, double _r, double _reserv, in
   reserv = _reserv; // eps-резервирование
   alfa = 15; // пока локальная адаптация - фиксированная
   NumPoints = 1;
-  //NumPoints = _parameters.NumPoints;;
+  NumPoints = _NumPoints;
   //MapType = _MapType;
   pTask = _pTask;
   pData = _pData;
@@ -243,39 +243,64 @@ void TMethod::CalculateIterationPoints()
   // Здесь надо взять NumPoints лучших характеристик из очереди
   // Очередь пока одна - очередь глобальных характеристик
   // В ней должно быть нужное количество интервалов, т.к. на первом шаге проводится NumPoints испытаний
+  //if(pn == 0)
+      //printf("NumPoints GetBestIntervals %d\n", NumPoints);
   pData->GetBestIntervals(BestIntervals, NumPoints);
+    //if(pn == 0)
+      //printf("end GetBestIntervals %d\n", NumPoints);
+
   // Пока заполняем одновременно вектор CurTrials, и вектор интервалов
   for (int i = 0; i < NumPoints; i++)
   {
+      //if(pn == 0)
+
     // Вычисляем x
     if (BestIntervals[i]->izl != BestIntervals[i]->izr)
     {
+          //printf("BestIntervals %lf  %lf\n", BestIntervals[i]->izr, BestIntervals[i]->izl);
+            //printf("!!!!1 %lf  %lf\n", BestIntervals[i]->xl, BestIntervals[i]->xr);
       pCurTrials[i].x = 0.5 * (BestIntervals[i]->xl + BestIntervals[i]->xr);
       //      pCurTrials[i].x = BestIntervals[i]->xl + 0.5*BestIntervals[i]->dx; 
+      //printf("!!!!1 %lf  %lf\n", BestIntervals[i]->xl, BestIntervals[i]->xr);
     }
     else
     {
+        //if (IterationCount == 2)
+            //printf("!!!!2 %lf  %lf\n", BestIntervals[i]->zr, BestIntervals[i]->zl);
       pCurTrials[i].x = 0.5 * (BestIntervals[i]->xl + BestIntervals[i]->xr) - 
         (((BestIntervals[i]->zr - BestIntervals[i]->zl) > 0) ? 1: -1) * 
         pow(fabs(BestIntervals[i]->zr - BestIntervals[i]->zl) / 
         pData->M[BestIntervals[i]->izl], pTask->GetFreeN()) / 2 / r;
+           //printf("!!!!2 %lf  %lf\n", BestIntervals[i]->zr, BestIntervals[i]->zl);
       //      pCurTrials[i].x = BestIntervals[i]->xl + (0.5*BestIntervals[i]->dx - (((BestIntervals[i]->zr - BestIntervals[i]->zl)>0)?1:-1)*pow(fabs(BestIntervals[i]->zr - BestIntervals[i]->zl)/pData->M[BestIntervals[i]->izl],pTask->GetFreeN())/(2*r));
     }
+  //if(pn == 0)
+      //printf("!!!!s %lf\n", pCurTrials[i].x);
 
+    	//Точка новой итерации должна быть в интервале, иначе - ошибка!!!
+	if(pCurTrials[i].x <= BestIntervals[i]->xl || pCurTrials[i].x >= BestIntervals[i]->xr )
+	{
+		throw EXCEPTION("Point is outside the interval !");
+	}
     // Вычисляем y
     // Вычисляем образ точки итерации - образ записывается в начальные позиции массива y
     Evolvent->GetImage(pCurTrials[i].x, pCurTrials[i].y);
+      //printf("!!!!get image %d\n", NumPoints);
     // Смещаем вычисленные координаты в соответствии с уровнем подзадачи
     for (int j = 0; j < pTask->GetFreeN(); j++)
     {
       pCurTrials[i].y[pTask->GetFixedN() + j] = pCurTrials[i].y[j];
     }
+      //if(pn == 0)
+      //printf("!!!!s %d\n", NumPoints);
     // Записываем фиксированные координаты - они всегда расположены вначае
     for (int j = 0; j < pTask->GetFixedN(); j++)
     {
       pCurTrials[i].y[j] = pTask->GetFixedY()[j];
     }
   }
+    //if(pn == 0)
+      //printf("END CALC POINTS\n");
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -625,6 +650,11 @@ int TMethod::GetNumberOfTrials()
 double TMethod::GetMu()
 {
   return pData->M[0]; // пока работаем только с одной функцией
+}
+// ------------------------------------------------------------------------------------------------
+const double* TMethod::GetM()
+{
+  return pData->M; // возвращается указатель на массив оценок констант Липшица
 }
 
 // ------------------------------------------------------------------------------------------------

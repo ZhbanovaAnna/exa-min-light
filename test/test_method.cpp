@@ -2,6 +2,8 @@
 #include "testFunction.h"
 #include "Rastrigin.h"
 #include <gtest.h>
+#include "common.h"
+#include "test_common.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -16,6 +18,7 @@
 #define _NUM_OF_FUNC 1
 #define _N 4
 #define _CURL 0
+#define _NUM_OF_POINTS 1
 // ------------------------------------------------------------------------------------------------
 class TMethodTest : public ::testing::Test 
 {
@@ -35,33 +38,10 @@ protected:
   }
 
   void CreateMethod(int MaxNumOfTrials = _MAX_NUM_OF_TRAILS, double eps = _EPS,double r = _R,
-      double reserv = _RESERV, int m = _M, int L = _L, int curl = _CURL) 
+      double reserv = _RESERV, int m = _M, int L = _L, int curl = _CURL, int NumPoints = _NUM_OF_POINTS) 
   {
-    method = new TMethod(MaxNumOfTrials, eps, r, reserv, m, L, curl, task, pData); 
+    method = new TMethod(MaxNumOfTrials, eps, r, reserv, m, L, curl, NumPoints, task, pData); 
     method->SetBounds();
-  }
-
-  void ReadIterationFromFile(FILE* pf, int &IterationCount, double &AchievedAccuracy,
-      bool &recalc, double &BestTrial_FuncValue, double &BestTrial_x, double* BestTrial_y,
-      double &pCurTrials_FuncValue, double &pCurTrials_x, double* pCurTrials_y)
-  {
-    char tmp[30];
-    fscanf(pf, "%s%s%d", tmp, tmp, &IterationCount);
-    fscanf(pf, "%s%s%lf", tmp, tmp, &AchievedAccuracy);
-    fscanf(pf, "%s%s%b", tmp, tmp, &recalc);
-    fscanf(pf, "%s%s%lf", tmp, tmp, &BestTrial_FuncValue);
-    fscanf(pf, "%s%s%lf", tmp, tmp, &BestTrial_x);    
-    for (int i = 0; i <_N; i++)
-    {
-        fscanf(pf, "%s%s%lf", tmp, tmp, &BestTrial_y[i]);
-    }
-
-    fscanf(pf, "%s%s%lf", tmp, tmp, &pCurTrials_FuncValue);  
-    fscanf(pf, "%s%s%lf", tmp, tmp, &pCurTrials_x); 
-    for (int i = 0; i < _N; i++)
-    {
-      fscanf(pf, "%s%s%lf", tmp, tmp, &pCurTrials_y[i]);
-    }    
   }
 
   bool DoIteration()
@@ -87,53 +67,53 @@ protected:
 
 /*Проверка входных параметров в конструкторе TMethod*/
 TEST_F(TMethodTest, throws_when_create_with_not_positive_MaxNumOfTrials)
-{  
-  ASSERT_ANY_THROW(TMethod method(0, _EPS, _R, _RESERV, _M, _L, _CURL, task, pData));
+{
+  ASSERT_ANY_THROW(TMethod method(0, _EPS, _R, _RESERV, _M, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, throws_when_create_with_not_positive_epsilon)
-{  
-  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, 0, _R, _RESERV, _M, _L, _CURL, task, pData));
+{
+  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, 0, _R, _RESERV, _M, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, throws_when_create_with_too_large_epsilon)
-{  
-  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, 0.011, _R, _RESERV, _M, _L, _CURL, task, pData));
+{
+  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, 0.011, _R, _RESERV, _M, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, throws_when_create_with_too_low_r)
-{  
-  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, 2, _RESERV, _M, _L, _CURL, task, pData));
+{
+  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, 2, _RESERV, _M, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, throws_when_create_with_negative_reserv)
-{  
-  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, -0.001, _M, _L, _CURL, task, pData));
+{
+  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, -0.001, _M, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, throws_when_create_with_too_large_reserv)
 {
-  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, 0.011, _M, _L, _CURL, task, pData));
+  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, 0.011, _M, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, throws_when_create_with_too_low_m)
-{  
-  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, _RESERV, 1, _L, _CURL, task, pData));
+{
+  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, _RESERV, 1, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, throws_when_create_with_too_large_m)
 {
-  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, _RESERV, MaxM + 1, _L, _CURL, task, pData));
+  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, _RESERV, MaxM + 1, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, throws_when_create_with_not_positive_L)
-{  
-  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, _RESERV, _M, 0, _CURL, task, pData));
+{
+  ASSERT_ANY_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, _RESERV, _M, 0, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 TEST_F(TMethodTest, can_create_with_correct_values)
 {
-  ASSERT_NO_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, _RESERV, _M, _L, _CURL, task, pData));
+  ASSERT_NO_THROW(TMethod method(_MAX_NUM_OF_TRAILS, _EPS, _R, _RESERV, _M, _L, _CURL, _NUM_OF_POINTS, task, pData));
 }
 
 /*Проверка FirstIteration*/
@@ -221,28 +201,8 @@ TEST_F(TMethodTest, CheckStopCondition_can_stop_method_when_required_accuracy_is
 TEST_F(TMethodTest, check_states_of_method_iterations)
 {
   char nameCurrentFile[] = "current_state.dat";
-  int IterationCount;
-  double AchievedAccuracy;
-  bool recalc;
-  double BestTrial_FuncValue;
-  double BestTrial_x;
-  double BestTrial_y[MaxDim];
-  double pCurTrials_FuncValue;
-  double pCurTrials_x;
-  double pCurTrials_y[MaxDim];
-
-  int currentIterationCount;
-  double currentAchievedAccuracy;
-  bool currentrecalc;
-  double currentBestTrial_FuncValue;
-  double currentBestTrial_x;
-  double currentBestTrial_y[MaxDim];  
-  double currentpCurTrials_FuncValue;
-  double currentpCurTrials_x;
-  double currentpCurTrials_y[MaxDim];
 
   bool IsStop = false;
-  FILE* rightf;
 
   FILE* currentf = fopen(nameCurrentFile,"w");
   fclose(currentf);
@@ -260,44 +220,5 @@ TEST_F(TMethodTest, check_states_of_method_iterations)
     }
     IsStop = DoIteration();
   }
-
-  rightf = fopen("state.dat","r");
-  currentf = fopen(nameCurrentFile,"r");
-  if(rightf == 0 || currentf == 0)
-  {
-    ASSERT_TRUE(false);
-  }
-  else
-  { 
-    int countOfIterations = method->GetIterationCount() / 10;
-    while(countOfIterations > 0)
-    {
-      ReadIterationFromFile(rightf, IterationCount, AchievedAccuracy, recalc,
-          BestTrial_FuncValue, BestTrial_x, BestTrial_y, pCurTrials_FuncValue,
-          pCurTrials_x, pCurTrials_y);
-
-      ReadIterationFromFile(currentf, currentIterationCount, currentAchievedAccuracy,
-          currentrecalc, currentBestTrial_FuncValue, currentBestTrial_x, currentBestTrial_y,
-          currentpCurTrials_FuncValue, currentpCurTrials_x, currentpCurTrials_y);
-
-      ASSERT_EQ(IterationCount, currentIterationCount);
-      ASSERT_DOUBLE_EQ(AchievedAccuracy, currentAchievedAccuracy);
-      ASSERT_EQ(recalc, currentrecalc);
-      ASSERT_DOUBLE_EQ(BestTrial_FuncValue, currentBestTrial_FuncValue);
-      ASSERT_DOUBLE_EQ(BestTrial_x, currentBestTrial_x);
-      ASSERT_DOUBLE_EQ(pCurTrials_FuncValue, currentpCurTrials_FuncValue);
-      ASSERT_DOUBLE_EQ(pCurTrials_x, currentpCurTrials_x);
-      for (int i = 0; i < _N; i++)
-      {
-        ASSERT_DOUBLE_EQ(BestTrial_y[i], currentBestTrial_y[i]);
-        ASSERT_DOUBLE_EQ(pCurTrials_y[i], currentpCurTrials_y[i]);
-      }
-
-    countOfIterations--;
-  }
-  fclose(rightf);
-  fclose(currentf);
-  }
+  CheckMetodIteration("state.dat", nameCurrentFile, method->GetIterationCount() / 10);
 }
-
- 
