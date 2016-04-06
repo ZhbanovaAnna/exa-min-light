@@ -1,4 +1,4 @@
-п»ї/*
+/*
 * Copyright (C) 2015 University of Nizhni Novgorod
 * This file is part of the Globalizer Light library, v 1.0
 * 
@@ -84,9 +84,11 @@ TProcess::TProcess(int _N, double *_A, double *_B, int _NumOfFunc,
   pTask = new TTask(_N, DimInTaskLevel[ProcLevel], _NumOfFunc, _A, _B, _F);
   pData = new TSearchData(/*parameters,*/ _NumOfFunc, DefaultSearchDataSize);
 
-  // С‡РёСЃР»Рѕ РїРѕСЂРѕР¶РґР°РµРјС‹С… С‚РѕС‡РµРє РЅР° РёС‚РµСЂР°С†РёРё СЃРѕРІРїР°РґР°РµС‚ СЃ С‡РёСЃР»РѕРј РїРѕС‚РѕРјРєРѕРІ РІ РґРµСЂРµРІРµ РїСЂРѕС†РµСЃСЃРѕРІ,
-  //  РµСЃР»Рё РїСЂРѕС†РµСЃСЃ - РЅРµ Р»РёСЃС‚
- /* if (ProcLevel < NumOfProcLevels - 1)
+
+  // число порождаемых точек на итерации совпадает с числом потомков в дереве процессов,
+  //  если процесс - не лист
+
+  /* if (ProcLevel < NumOfProcLevels - 1)
     parameters.NumPoints = parameters.ChildInProcLevel[ProcLevel];
   TMethodFactory::CreateMethod(&pMethod, 
     parameters.MaxNumOfPoints[ProcLevel], 
@@ -95,18 +97,19 @@ TProcess::TProcess(int _N, double *_A, double *_B, int _NumOfFunc,
 	parameters.rEps, // eps-reserv
     parameters.m, 
     parameters.MapInLevel[ProcLevel],  
-    0, // РЅРѕРјРµСЂ СЂР°Р·РІРµСЂС‚РєРё - РјРѕР¶РЅРѕ РІС‹С‡РёСЃР»РёС‚СЊ, РїРѕРєР° РѕРґРЅР° СЂР°Р·РІРµСЂС‚РєР° СЃ РЅРѕРјРµСЂРѕРј 0
-    parameters.MapType, // РІРёРґ СЂР°Р·РІРµСЂС‚РєРё
+    0, // номер развертки - можно вычислить, пока одна развертка с номером 0
+    parameters.MapType, // вид развертки
     parameters,
     pTask, pData);*/
  pMethod = new TMethod(MaxNumOfPoints[ProcLevel], _Eps[ProcLevel], _r, 0.01/*eps-reserv*/, _m, MapInLevel[ProcLevel],  
-	  0,//РЅРѕРјРµСЂ СЂР°Р·РІРµСЂС‚РєРё - РјРѕР¶РЅРѕ РІС‹С‡РёСЃР»РёС‚СЊ, РїРѕРєР° РѕРґРЅР° СЂР°Р·РІРµСЂС‚РєР° СЃ РЅРѕРјРµСЂРѕРј 0	  
-    /*_MapType,*///Р’РёРґ СЂР°Р·РІРµСЂС‚РєРё
+	  0,//номер развертки - можно вычислить, пока одна развертка с номером 0	  
+    /*_MapType,*///Вид развертки
     (ProcLevel < NumOfProcLevels - 1)?ChildInProcLevel[ProcLevel]:1,
-// 	(NumOfProcLevels>1)?ChildInProcLevel[ProcLevel]:1,//С‡РёСЃР»Рѕ РїРѕСЂРѕР¶РґР°РµРјС‹С… С‚РѕС‡РµРє РЅР° РёС‚РµСЂР°С†РёРё - СЃРѕРІРїР°РґР°РµС‚ СЃ С‡РёСЃР»РѕРј РїРѕС‚РѕРјРєРѕРІ РІ РґРµСЂРµРІРµ РїСЂРѕС†РµСЃСЃРѕРІ,
-													  //РёР»Рё Р¶Рµ СЂР°РІРЅРѕ 1 РїСЂРё СЂРµС€РµРЅРёРё РІ 1 СѓР·Р»Рµ РґРµСЂРµРІР°
+// 	(NumOfProcLevels>1)?ChildInProcLevel[ProcLevel]:1,//число порождаемых точек на итерации - совпадает с числом потомков в дереве процессов,
+													  //или же равно 1 при решении в 1 узле дерева
 	pTask, pData);
-  // РѕС‚Р»Р°РґРєР° 
+  // отладка 
+
   int ProcNum; 
   MPI_Comm_rank(MPI_COMM_WORLD, &ProcNum);
   pMethod->pn = ProcNum;
@@ -135,8 +138,9 @@ double TProcess::GetSolveTime()
 // ------------------------------------------------------------------------------------------------
 void TProcess::InitProcess()
 {
-  int ProcNum;           // РѕР±С‰РµРµ С‡РёСЃР»Рѕ РїСЂРѕС†РµСЃСЃРѕРІ РІ MPI
-  int TotalNumOfProc;    // РѕР±С‰РµРµ С‡РёСЃР»Рѕ РїСЂРѕС†РµСЃСЃРѕРІ РІ РґРµСЂРµРІРµ РїСЂРѕС†РµСЃСЃРѕРІ
+  int ProcNum;           // общее число процессов в MPI
+  int TotalNumOfProc;    // общее число процессов в дереве процессов
+
   int *BordersInProcNum;
   int i, j;
 
@@ -163,7 +167,8 @@ void TProcess::InitProcess()
   }
 
 //pMethod->pn = ProcRank;
-  // РІС‹С‡РёСЃР»СЏРµРј РіСЂР°РЅРёС†С‹ СѓСЂРѕРІРЅРµР№ РІ РґРµСЂРµРІРµ РїСЂРѕС†РµСЃСЃРѕРІ - BordersInProcNum
+
+  // вычисляем границы уровней в дереве процессов - BordersInProcNum
   BordersInProcNum = new int[NumOfProcLevels];
   int MapMultiplier = 1;//MapInLevel[0];
   int ChildMultiplier = 1;
@@ -181,7 +186,8 @@ void TProcess::InitProcess()
   }
 
   //ProcRank = 2;
-  // РЅСѓР»РµРІРѕР№ СѓСЂРѕРІРµРЅСЊ РІ РґРµСЂРµРІРµ - "РєРѕСЂРЅРё"
+  // нулевой уровень в дереве - "корни"
+
   if (ProcRank < /*MapInLevel[0]*/1)
   {
     ProcLevel = 0;
@@ -194,13 +200,15 @@ void TProcess::InitProcess()
   {
     int BorderAdditive;
 
-    // РІС‹С‡РёСЃР»СЏРµРј СѓСЂРѕРІРµРЅСЊ РїСЂРѕС†РµСЃСЃР° РІ РґРµСЂРµРІРµ РїСЂРѕС†РµСЃСЃРѕРІ
+    // вычисляем уровень процесса в дереве процессов
+
     ProcLevel = NumOfProcLevels - 1;
     for (i = NumOfProcLevels - 2; i >=1; i--)
       if (ProcRank < BordersInProcNum[i])
         ProcLevel = i;
 
-    // РІС‹С‡РёСЃР»СЏРµРј РЅРѕРјРµСЂ РїСЂРѕС†РµСЃСЃР°-СЂРѕРґРёС‚РµР»СЏ
+
+    // вычисляем номер процесса-родителя
     MapMultiplier = MapInLevel[ProcLevel];
     BorderAdditive = 0;
     if (ProcLevel > 1)
@@ -208,7 +216,9 @@ void TProcess::InitProcess()
     ProcParent = (ProcRank - BordersInProcNum[ProcLevel - 1]) / 
       (ChildInProcLevel[ProcLevel - 1] * MapMultiplier) + BorderAdditive;
 
-    // РІС‹С‡РёСЃР»СЏРµРј РЅРѕРјРµСЂР° РїСЂРѕС†РµСЃСЃРѕРІ-РїРѕС‚РѕРјРєРѕРІ (РїРѕС‚РѕРјРєРё - "РЅСѓР»РµРІС‹Рµ РїСЂРѕС†РµСЃСЃС‹" РІ СЃРІРѕРёС… РіСЂСѓРїРїР°С…)
+
+    // вычисляем номера процессов-потомков (потомки - "нулевые процессы" в своих группах)
+
     if (ProcLevel == NumOfProcLevels - 1)
     {
       ProcChild = new int[0];
@@ -225,8 +235,8 @@ void TProcess::InitProcess()
     }
   }
 
-  // РІС‹С‡РёСЃР»СЏРµРј СЃРѕСЃРµРґРµР№ - РїСЂРѕС†РµСЃСЃС‹, РєРѕС‚РѕСЂС‹Рµ Р±СѓРґСѓС‚ СЂРµС€Р°С‚СЊ РѕРґРЅСѓ Рё С‚Сѓ Р¶Рµ Р·Р°РґР°С‡Сѓ, 
-  //  РёСЃРїРѕР»СЊР·СѓСЏ РјРЅРѕР¶РµСЃС‚РІРµРЅРЅСѓСЋ СЂР°Р·РІРµСЂС‚РєСѓ
+  // вычисляем соседей - процессы, которые будут решать одну и ту же задачу, 
+  //  используя множественную развертку
   int Remainder = (ProcRank - BordersInProcNum[ProcLevel - 1]) % 1/*MapInLevel[ProcLevel]*/;
   int st = ProcRank - Remainder;
   int fin = st + MapInLevel[ProcLevel];
@@ -349,15 +359,15 @@ void TProcess::Solve()
       duration = Timer.GetTime();
       OptimEstimation = pMethod->GetOptimEstimation();
       NumberOfTrials = pMethod->GetNumberOfTrials();
-      // РџРѕСЃС‹Р»Р°РµРј РёРЅРґРµРєСЃ С‚РѕС‡РєРё
+      // Посылаем индекс точки
       MPI_Send(&OptimEstimation.index, 1, MPI_INT, ProcParent, TagChildSolved, MPI_COMM_WORLD);
-      // РџРѕСЃС‹Р»Р°РµРј С‚РѕС‡РєСѓ
+      // Посылаем точку
       MPI_Send(OptimEstimation.y, pTask->GetN(), MPI_DOUBLE, ProcParent,
         TagChildSolved, MPI_COMM_WORLD);
-      // РџРѕСЃС‹Р»Р°РµРј РІС‹С‡РёСЃР»РµРЅРЅС‹Рµ Р·РЅР°С‡РµРЅРёСЏ РІ С‚РѕС‡РєРµ
+      // Посылаем вычисленные значения в точке
       MPI_Send(OptimEstimation.FuncValues, pTask->GetNumOfFunc(), MPI_DOUBLE, ProcParent, 
         TagChildSolved, MPI_COMM_WORLD);
-      // РџРѕСЃС‹Р»Р°РµРј С‡РёСЃР»Рѕ РІР»РѕР¶РµРЅРЅС‹С… РёС‚РµСЂР°С†РёР№
+      // Посылаем число вложенных итераций
       MPI_Send(&NumberOfTrials, 1, MPI_INT, ProcParent, TagChildSolved, MPI_COMM_WORLD);
     }
 
@@ -463,9 +473,10 @@ void TProcess::DoIteration()
     else
       CalculateFunctionals();
     ReceiveCalcPoints();
-	//РџСЂРѕРІРµСЃС‚Рё РѕС†РµРЅРєСѓ РѕРїС‚РёРјСѓРјР° РЅСѓР¶РЅРѕ РґРѕ РѕР±РЅРѕРІР»РµРЅРёСЏ РґР°РЅРЅС‹С…,  С‚.Рє. РІ СЌС‚РѕР№ С„СѓРЅРєС†РёРё РјРѕР¶РµС‚ Р±С‹С‚СЊ РїРѕРґРЅСЏС‚ С„Р»Р°Рі recalc
+	//Провести оценку оптимума нужно до обновления данных,  т.к. в этой функции может быть поднят флаг recalc
     pMethod->EstimateOptimum();
-	//Р’СЃРµ СЃР»СѓС‡Р°Рё РїРѕРґРЅСЏС‚РёСЏ С„Р»Р°РіР° recalc РѕР±СЂР°Р±РѕС‚Р°РЅС‹, РјРѕР¶РЅРѕ РѕР±РЅРѕРІР»СЏС‚СЊ Р±Р°Р·Сѓ
+	//Все случаи поднятия флага recalc обработаны, можно обновлять базу
+
     pMethod->RenewSearchData();
     pMethod->FinalizeIteration();
     pMethod->IterationHandler(this);
@@ -487,7 +498,8 @@ void TProcess::DoIteration()
 // ------------------------------------------------------------------------------------------------
 void TProcess::EndIterations()
 {
-  //Р›РѕРєР°Р»СЊРЅРѕРµ СѓС‚РѕС‡РЅРµРЅРёРµ РЅР°Р№РґРµРЅРЅРѕРіРѕ СЂРµС€РµРЅРёСЏ
+  //Локальное уточнение найденного решения
+
   pMethod->LocalSearch();
 }
 
@@ -521,23 +533,23 @@ void TProcess::CalculateFunctionals()
   for (i = 0; i < ChildInProcLevel[ProcLevel]; i++)
   {
     MPI_Send(&FixedN, 1, MPI_INT, ProcChild[i], TagChildStartSolve, MPI_COMM_WORLD);
-    // Р¤РёРєСЃРёСЂРѕРІР°РЅРЅС‹Рµ РїРµСЂРµРјРµРЅРЅС‹Рµ РґРѕР»Р¶РЅС‹ РІРѕР·РЅРёРєР°С‚СЊ РёР· РјР°СЃСЃРёРІР° С‚РµРєСѓС‰РёС… РёС‚РµСЂР°С†РёР№
+    // Фиксированные переменные должны возникать из массива текущих итераций
     memcpy(FixedY, CurTrials[i].y, FixedN * sizeof(double));
     MPI_Send(FixedY, FixedN, MPI_DOUBLE, ProcChild[i], TagChildStartSolve, MPI_COMM_WORLD);
   }
 
   for (i = 0; i < ChildInProcLevel[ProcLevel]; i++)
   {
-    // РџСЂРёРЅРёРјР°РµРј РёРЅРґРµРєСЃ С‚РѕС‡РєРё
+    // Принимаем индекс точки
     MPI_Recv(&CurTrials[i].index, 1, MPI_INT, ProcChild[i],
       TagChildSolved, MPI_COMM_WORLD, &status);
-    // РџСЂРёРЅРёРјР°РµРј С‚РѕС‡РєСѓ
+    // Принимаем точку
     MPI_Recv(CurTrials[i].y, pTask->GetN(), MPI_DOUBLE, ProcChild[i], 
       TagChildSolved, MPI_COMM_WORLD, &status);
-    // РџСЂРёРЅРёРјР°РµРј Р·РЅР°С‡РµРЅРёСЏ С„СѓРЅРєС†РёРѕРЅР°Р»РѕРІ
+    // Принимаем значения функционалов
     MPI_Recv(CurTrials[i].FuncValues, pTask->GetNumOfFunc(), MPI_DOUBLE, ProcChild[i],
       TagChildSolved, MPI_COMM_WORLD, &status);
-    // РџСЂРёРЅРёРјР°РµРј С‡РёСЃР»Рѕ РІР»РѕР¶РµРЅРЅС‹С… РёС‚РµСЂР°С†РёР№
+    // Принимаем число вложенных итераций
     MPI_Recv(&CurTrials[i].K, 1, MPI_INT, ProcChild[i],
       TagChildSolved, MPI_COMM_WORLD, &status);
   }

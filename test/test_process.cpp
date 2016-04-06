@@ -1,4 +1,5 @@
-﻿#include "process.h"
+#include "process.h"
+
 #include "test_common.h"
 #include "Rastrigin.h"
 //#include "testFunction.h"

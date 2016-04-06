@@ -1,4 +1,5 @@
-﻿#ifndef __TEST_COMMON_H__
+#ifndef __TEST_COMMON_H__
+
 #define __TEST_COMMON_H__
 #include <gtest.h>
 
